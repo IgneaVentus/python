@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 from app import app, db
 from app.scripts import restart_db, killWeb
 from app.models import User, Post, Comment, Subforum, Error

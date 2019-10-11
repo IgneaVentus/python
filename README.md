@@ -1,4 +1,5 @@
 # Bajinga!
+### Underdeveloped wannabe fan of reddit and 4chan
 Free forum application made by total rookie just learning to work with these things.
 To be fair, I must warn you - this app uses minimal JavaScript (just Bootstrap), wchich is one of my professors requirements about this 
 project. What I aim for is a hybrid between 4chan and reddit - any user can create any number of subforums, posts or comments but every post 
@@ -15,9 +16,7 @@ To do:
 - Add basic notepad functionality for users
 - Add favorite posts functionality for users
 - Add basic mentioning functionality for users
-- **Add possibility to post images
+- *Add possibility to post images
 
-*Right now I admit I care more about not using space than actually building community. This is still, after all, WIP.
-
-**May be not possible because right now I use free hosting.
+Right now I admit I care more about not using space than actually building community. This is still, after all, WIP, and to add to it right now I use free hosting.
 Btw, they earned it: https://pythonanywhere.com

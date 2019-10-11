@@ -11,7 +11,8 @@ body > nav {
 }
 .post_list {
     max-height: 21vh;
-    overflow: ellipsis;
+    text-overflow: ellipsis;
+    overflow: hidden;
     white-space: pre-line;
 }
 .spec {

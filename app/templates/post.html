@@ -4,7 +4,7 @@
 <div class="container-fluid post_area bg-flake">
     <div class="row">
         <div class="col-md-10 h5">{{post.title}}</div>
-        {% if (current_user.is_anonymous()==False) and ( current_user.get_id()==post.author ) or (current_user.is_anonymous()==False) and (current_user.level>0) %}
+        {% if (current_user.is_authenticated) and ( current_user.get_id()==post.author ) or (current_user.is_authenticated) and (current_user.level>0) %}
         <div class="col-md-2 btn-group text-right" role="group" aria-lavel="Quick admin">
             <a href="/add_post?id={{post['pub_date']}}" class="btn btn-primary">M</a>
             <a type="button" href="/post?del={{post['pub_date']}}" class="btn btn-danger">D</a>
@@ -21,6 +21,7 @@
         <div class="col">{{post.content}}</div>
     </div>
 </div>
+{% if current_user.is_authenticated %}
 <form action="" method="POST">
     <input type="hidden" name="target" value="{{post.pub_date}}">
     <div class="form-row">
@@ -30,6 +31,12 @@
         <button type="submit" class="btn btn-dark col" style="margin-bottom: 1rem;">Dodaj</button>
     </div>
 </form>
+{%else%}
+<div class="alert alert-info" role="alert">
+    <h4 class="alert-heading">Poczekaj!</h4>
+    <p>Obecnie nie możesz komentować ani tworzyć nowych postów! <a href="/login" class="alert-link">Zaloguj się</a> lub <a href="/login" class="alert-link">zarejestruj</a> aby zacząć korzystać w pełni z forum!</p>
+</div>
+{%endif%}
 {% if comments %}
     {% for comment in comments %}
         <div class="container comment w-75 bg-flake">
@@ -39,7 +46,7 @@
             </div>
             <div class="row">
                 <div class="col">{{comment["content"]}}</div>
-                {% if (current_user.is_anonymous()==False) and ( current_user.get_id()==comment.author ) or (current_user.is_anonymous()==False) and (current_user.level>0) %}<div class="col-md-1 m-0 p-0 btn-group text-right" role="group" aria-lavel="Quick admin">
+                {% if (current_user.is_authenticated) and ( current_user.get_id()==comment.author ) or (current_user.is_authenticated) and (current_user.level>0) %}<div class="col-md-1 m-0 p-0 btn-group text-right" role="group" aria-lavel="Quick admin">
                     <a type="button" href="/post?del_com={{comment.id}}" class="btn btn-danger btn-sm">D</a>
                     {% if current_user.level>0 %}<a href="/userlist?id={{comment.author}}" class="btn btn-info btn-sm">F</a>{% endif %}
                 </div>{% endif %}

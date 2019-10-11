@@ -128,6 +128,8 @@ def post():
             try:
                 com=Comment.query.filter_by(id=request.args.get("del_com")).first()
                 buf=com.target
+                post=Post.query.filter_by(pub_date=buf).first()
+                post.com_count=post.com_count-1
                 db.session.delete(com)
                 db.session.commit()
                 flash("Komentarz usunięty.", category="success")
@@ -139,6 +141,8 @@ def post():
         try:
             for comment in post.comments:
                 db.session.delete(comment)
+            sub=Subforum.query.filter_by(name=post.forum).first()
+            sub.post_count=sub.post_count-1
             db.session.delete(post)
             db.session.commit()
             flash("Post został usunięty.", category="success")
@@ -259,6 +263,8 @@ def cpanel():
                     db.session.delete(comment)
                 db.session.commit()
                 post_title=post.title
+                sub=Subforum.query.filter_by(name=post.forum).first()
+                sub.post_count=sub.post_count-1
                 db.session.delete(post)
                 db.session.commit()
                 flash("Pomyślnie usunięto post '"+post_title+"'.", category="success")

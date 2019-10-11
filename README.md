@@ -10,6 +10,7 @@ To do:
 - Fix "Modified" tag at post.html
 - Move aPanel to different html
 - Simplify routes
+- Add pagination
 - Add possibility for "sticky", non-deletable (for script) posts
 - Add basic mail functionality for users
 - Add basic notepad functionality for users

@@ -20,7 +20,6 @@ def inject_top5():
 def user_loader(username):
     return User.query.get(username)
 
-@app.route('')
 @app.route('/')
 @app.route('/index', methods=["GET", "POST"])
 def index():

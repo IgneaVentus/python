@@ -18,5 +18,5 @@ To do:
 - Add basic mentioning functionality for users
 - *Add possibility to post images
 
-Right now I admit I care more about not using space than actually building community. This is still, after all, WIP, and to add to it right now I use free hosting.
+*Right now I admit I care more about not using space than actually building community. This is still, after all, WIP, and to add to it right now I use free hosting.
 Btw, they earned it: https://pythonanywhere.com

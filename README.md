@@ -1,0 +1,23 @@
+# Bajinga!
+Free forum application made by total rookie just learning to work with these things.
+To be fair, I must warn you - this app uses minimal JavaScript (just Bootstrap), wchich is one of my professors requirements about this 
+project. What I aim for is a hybrid between 4chan and reddit - any user can create any number of subforums, posts or comments but every post 
+older than 7* days 
+
+Now, You are free to use it, modify it or whatever. The only requirement is for You to give me credit, that's all I want.
+
+To do:
+- Fix "Modified" tag at post.html
+- Move aPanel to different html
+- Simplify routes
+- Add possibility for "sticky", non-deletable (for script) posts
+- Add basic mail functionality for users
+- Add basic notepad functionality for users
+- Add favorite posts functionality for users
+- Add basic mentioning functionality for users
+- **Add possibility to post images
+
+*Right now I admit I care more about not using space than actually building community. This is still, after all, WIP.
+
+**May be not possible because right now I use free hosting.
+Btw, they earned it: https://pythonanywhere.com

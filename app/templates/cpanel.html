@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row bg-flake">
+    <div class="col-md-3">
+      <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <a class="nav-link active" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="true">Profil</a>
+        <a class="nav-link" id="v-pills-forums-tab" data-toggle="pill" href="#v-pills-forums" role="tab" aria-controls="v-pills-forums" aria-selected="false">Podfora</a>
+        <a class="nav-link" id="v-pills-posts-tab" data-toggle="pill" href="#v-pills-posts" role="tab" aria-controls="v-pills-posts" aria-selected="false">Posty</a>
+        <a class="nav-link" id="v-pills-comments-tab" data-toggle="pill" href="#v-pills-comments" role="tab" aria-controls="v-pills-comments" aria-selected="false">Komentarze</a>
+        <a href="/add_sub" class="nav-link" aria-selected="false">Utwórz nowe podforum</a>
+        {% if current_user.level>0 %}<a class="nav-link" id="v-pills-userlist-tab" data-toggle="pill" href="#v-pills-userlist" role="tab" aria-controls="v-pills-userlist" aria-selected="false">Lista użytkowników</a>
+        <a class="nav-link" id="v-pills-sublist-tab" data-toggle="pill" href="#v-pills-sublist" role="tab" aria-controls="v-pills-sublist" aria-selected="false">Lista podfor</a>
+        <a class="nav-link" id="v-pills-postlist-tab" data-toggle="pill" href="#v-pills-postlist" role="tab" aria-controls="v-pills-postlist" aria-selected="false">Lista postów</a>
+        <a class="nav-link" id="v-pills-errlist-tab" data-toggle="pill" href="#v-pills-errlist" role="tab" aria-controls="v-pills-errlist" aria-selected="false">Lista błędów</a>{%endif%}
+        {% if current_user.level>1 %}<a class="nav-link" id="v-pills-apanel-tab" data-toggle="pill" href="#v-pills-apanel" role="tab" aria-controls="v-pills-apanel" aria-selected="false">aPanel</a>{%endif%}
+        <a href="/logout" class="nav-link" aria-selected="false">Wyloguj</a>
+      </div>
+    </div>
+    <div class="col-md-9">
+      <div class="tab-content" id="v-pills-tabContent">
+        <div class="tab-pane fade show active" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+            <p>Nazwa użytkownika: {{current_user.username}}</p>
+            <p>Email użytkownika: {{current_user.mail}}</p>
+            <p>Data założenia konta: {{current_user.creation_date}}</p>
+            <p>Poziom autoryzacji konta: {{current_user.level}}</p>
+            <form method="POST">
+                <div class="form-row">
+                    <input type="password" class="form control" name="pass1" placeholder="Nowe Hasło" required>
+                    <input type="password" class="form control" name="pass2" placeholder="Powtórz nowe hasło" required>
+                    <button class="btn btn-outline-primary" name="pass" value="1" type="submit" role="button">Zmień hasło</button>
+                </div>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="v-pills-forums" role="tabpanel" aria-labelledby="v-pills-forums-tab">
+        {% if forums %}
+        {% for forum in forums %}
+            <div class="card post_list">
+                <div class="card text-white bg-flake">
+                    <h5 class="card-title"><a href="/index?cat={{forum.name}}">{{forum["name"]}}</a></h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{forum["tags"]}}</h6>
+                    <p class="card=text">{{forum["desc"]}}</p>
+                </div>
+            </div>
+        {% endfor %}
+        {% else %}
+        <p> Jeszcze nie masz żadnych podfor!</p>
+        {% endif %}
+        </div>
+        <div class="tab-pane fade" id="v-pills-posts" role="tabpanel" aria-labelledby="v-pills-posts-tab">
+        {% if posts %}
+        {% for post in posts %}
+            <div class="card post_list">
+                <div class="card text-white bg-flake">
+                    <h5 class="card-title"><a href="/post?id={{post.pub_date}}">{{post["title"]}}</a></h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{post["tags"]}}</h6>
+                    <p class="card=text">{{post["content"]}}</p>
+                </div>
+            </div>
+        {% endfor %}
+        {% else %}
+        <p> Jeszcze nie masz żadnych postów!</p>
+        {% endif %}
+        </div>
+        <div class="tab-pane fade" id="v-pills-comments" role="tabpanel" aria-labelledby="v-pills-comments-tab">
+        {% if comments %}
+        {% for comment in comments %}
+            <div class="card post_list">
+                <div class="card text-white bg-flake">
+                    <h5 class="card-title"><a href="/post?id={{comment.target}}">{{Post.query.filter_by(pub_date=comment.target).first().title}}</a></h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{comment["pub_date"].isoformat(' ', "minutes")}}</h6>
+                    <p class="card=text">{{comment["content"]}}</p>
+                </div>
+            </div>
+        {% endfor %}
+        {% else %}
+        <p> Jeszcze nie masz żadnych komentarzy!</p>
+        {% endif %}
+        </div>
+        <div class="tab-pane fade" id="v-pills-userlist" role="tabpanel" aria-labelledby="v-pills-userlist-tab">
+            <form action='' method="POST">
+                <div class="form-row">
+                    <input type="hidden" name="action_target" value="user">
+                    <input type="search" class="form-control col-8" name="id" placeholder="Wpisz nick użytkownika lub jego część">
+                    <button type="submit" class="btn btn-primary col" name="action_type" value="search">Szukaj</button>
+                </div>
+            </form>
+            <table class="table text-center">
+                <thead>
+                    <tr>
+                        <td>Nick użytkownika</td>
+                        <td>Poziom autoryzacji</td>
+                        <td>Zbanowany</td>
+                        <td>Działania</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in userlist %}
+                    <tr>
+                        <td>{{user["username"]}}</td>
+                        <td>
+                            {% if user["level"] == 2 %}
+                                Administrator
+                            {% elif user["level"] == 1 %}
+                                Moderator
+                            {% elif user["level"] == 0 %}
+                                Użytkownik
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user["banned"] %}
+                            Tak
+                            {% else %}
+                            Nie
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user["username"] != "admin" %}
+                            <form action='' method="POST">
+                                <div class="row">
+                                    <input type="hidden" name="action_target" value="user">
+                                    <select class="form-control col-lg-8" name="action_type">
+                                      <option value=1>Ban, dzień</option>
+                                      <option value=7>Ban, tydzień</option>
+                                      <option value=30>Ban, miesiąc</option>
+                                      <option value=180>Ban, pół roku</option>
+                                      <option value="unban">Usunięcie bana</option>
+                                      <option value="del">Usunięcie konta</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-outline-danger col-lg-4" name="id" value="{{user.username}}">Wykonaj</button>
+                                </div>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="v-pills-sublist" role="tabpanel" aria-labelledby="v-pills-sublist-tab">
+            <form action='' method="POST">
+                <div class="form-row">
+                    <input type="hidden" name="action_target" value="sub">
+                    <input type="search" class="form-control col-8" name="id" placeholder="Wpisz nazwę, jej część lub tagi szukanego podfora">
+                    <button type="submit" class="btn btn-primary col" name="action_type" value="search">Szukaj</button>
+                </div>
+            </form>
+            <table class="table text-center">
+                <thead>
+                    <tr>
+                        <td>Nazwa podforum</td>
+                        <td>Ilość postów</td>
+                        <td>Data stworzenia</td>
+                        <td>Czy zaakceptowane</td>
+                        <td>Działania</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in sublist %}
+                    <tr>
+                        <td><a href="/index?cat={{sub['name']}}">{{sub["name"]}}</a></td>
+                        <td>
+                            {{sub["post_count"]}}
+                        </td>
+                        <td>
+                            {{sub["pub_date"]}}
+                        </td>
+                        <td>
+                            {{sub["approved"]}}
+                        </td>
+                        <td>
+                            <form action='' method="POST">
+                                <div class="row">
+                                    <input type="hidden" name="action_target" value="sub">
+                                    <input type="hidden" name="id" value="{{sub.name}}">
+                                    <button type="submit" class="btn btn-outline-danger text-center" name="action_type" value="del">Usuń</button>
+                                    <button type="submit" class="btn btn-outline-danger text-center" name="action_type" value="approve">Zaaprobuj</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="v-pills-postlist" role="tabpanel" aria-labelledby="v-pills-postlist-tab">
+            <form action='' method="POST">
+                <div class="form-row">
+                    <input type="hidden" name="action_target" value="post">
+                    <input type="search" class="form-control col-8" name="id" placeholder="Wpisz tytuł, jego część lub tagi szukanego posta.">
+                    <button type="submit" class="btn btn-primary col" name="action_type" value="search">Szukaj</button>
+                </div>
+            </form>
+            <table class="table text-center">
+                <thead>
+                    <tr>
+                        <td>Tytuł postu</td>
+                        <td>Ilość komentarzy</td>
+                        <td>Data stworzenia</td>
+                        <td>Działania</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in postlist %}
+                    <tr>
+                        <td><a href="/post?id={{post['pub_date']}}">{{post["title"]}}</a></td>
+                        <td>
+                            {{post["com_count"]}}
+                        </td>
+                        <td>
+                            {{post["pub_date"]}}
+                        </td>
+                        <td>
+                            <form action='' method="POST">
+                                <div class="row">
+                                    <input type="hidden" name="action_target" value="post">
+                                    <button type="submit" class="btn btn-outline-danger text-center" name="id" value="{{post.pub_date}}">Usuń</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="v-pills-errlist" role="tabpanel" aria-labelledby="v-pills-errlist-tab">
+            <table class="table text-center">
+                <thead>
+                    <tr>
+                        <td>Kod błędu</td>
+                        <td>Nazwa błędu</td>
+                        <td>Data zdarzenia</td>
+                        <td>Opis</td>
+                        <td>Adres</td>
+                        <td>Działania</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for error in errorlist %}
+                    <tr>
+                        <td>{{error["code"]}}</td>
+                        <td>
+                            {{error["name"]}}
+                        </td>
+                        <td>
+                            {{error["date"]}}
+                        </td>
+                        <td>
+                            {{error["desc"]}}
+                        </td>
+                        <td>
+                            {{error["site"]}}
+                        </td>
+                        <td>
+                            <form action='' method="POST">
+                                <input type="hidden" name="action_target" value="error">
+                                <button type="submit" class="btn btn-outline-danger text-center" name="id" value="{{error.date}}">Usuń</button>
+                                <button type="submit" class="btn btn-outline-danger text-center" name="delAll" value=1>Usuń Wszystkie</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="v-pills-apanel" role="tabpanel" aria-labelledby="v-pills-apanel-tab">
+                <form method="POST">
+                    <div class="input-group">
+                        <button class="btn btn-outline-danger btn-block" name="admin" value="0" type="submit" role="button">Przywróc bazę danych do ustawień fabrycznych</button>
+                        <button class="btn btn-outline-danger btn-block" name="admin" value="1" type="submit" role="button">Wyłącz stronę</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+  </div>
+{% endblock %}

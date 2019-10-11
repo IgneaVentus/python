@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form action="" method="POST">
+        <div class="form-group">
+            <label for="tytuł">Tytuł</label>
+            <input type="text" class="form-control" name="title" id="tytuł" placeholder="Tytuł posta" {% if modpost %} value="{{modpost.title}}" {% endif %} required>
+        </div>
+        <input type ="hidden" name="forum" {% if modpost %} value="{{modpost.forum}}" {% else %} value="{{request.args.get('cat')}}" {% endif %} readonly>
+        <div class="form-group">
+            <label for="tagi">Tagi</label>
+            <input type="text" class="form-control" name="tags" id="tagi" placeholder="Tagi związane z postem" {% if modpost %} value="{{modpost.tags}}" {% endif %}>
+        </div>
+        <div class="form-group">
+            <label for="zawartość">Treść posta</label>
+            <textarea type="text" class="form-control" name="content" id="zawartość" placeholder="Tutaj wpisz treść posta" rows="6" required>{% if modpost %}{{modpost.content}}{% endif %}</textarea>
+        </div>
+        <button type="submit" name="mod" value={% if modpost %}True{% else %}False{%endif%}  class="btn btn-dark">Wyślij</button>
+    </form>
+{% endblock %}

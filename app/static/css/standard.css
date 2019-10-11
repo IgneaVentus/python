@@ -1,0 +1,51 @@
+body {
+    background: #777777 url(../media/bg_andrew_neel.jpg) no-repeat fixed center;
+    background-size: cover;
+    color: whitesmoke;
+}
+body > nav {
+    margin-bottom: 10px!important;
+}
+.card {
+    height: 100%;
+}
+.post_list {
+    max-height: 21vh;
+    overflow: ellipsis;
+    white-space: pre-line;
+}
+.spec {
+    border-style: solid;
+    border-width: 0.5px;
+    border-color: silver;
+    border-radius: 5px;
+    margin: 3px;
+    padding: 5px;
+}
+
+.bg-flake {
+    background-color: rgba(32,32,32,0.9);
+}
+
+.card.bg-flake {
+    background-color: none;
+}
+
+.post_area, .comment {
+    border-style: solid;
+    border-width: 0.5px;
+    border-color: silver;
+    border-radius: 0px 20px;
+    margin-bottom: 10px;
+    white-space: pre-line;
+}
+
+a {
+    color: goldenrod;
+}
+
+.poster-btn {
+    transform: translateX(-50%) translateY(-50%);
+    left: 50%;
+    position: absolute;
+}

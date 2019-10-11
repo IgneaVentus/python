@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid post_area bg-flake">
+    <div class="row">
+        <div class="col-md-10 h5">{{post.title}}</div>
+        {% if (current_user.is_anonymous()==False) and ( current_user.get_id()==post.author ) or (current_user.is_anonymous()==False) and (current_user.level>0) %}
+        <div class="col-md-2 btn-group text-right" role="group" aria-lavel="Quick admin">
+            <a href="/add_post?id={{post['pub_date']}}" class="btn btn-primary">M</a>
+            <a type="button" href="/post?del={{post['pub_date']}}" class="btn btn-danger">D</a>
+            {% if current_user.level>0 %}<a href="/userlist?id={{post['author']}}" class="btn btn-info">F</a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="row">
+        <div class="col text-left">Autor: {{post.author}}</div>
+        <div class="col text-lowercase text-muted text-center">tagi: {{post.tags}}</div>
+        <div class="col text-right">{% if post.is_modified==True %}[Modyfikowany] {%endif%}{{post.pub_date.isoformat(' ', "minutes")}}</div>
+    </div>
+    <div class="row">
+        <div class="col">{{post.content}}</div>
+    </div>
+</div>
+<form action="" method="POST">
+    <input type="hidden" name="target" value="{{post.pub_date}}">
+    <div class="form-row">
+        <div class="form-group col-10">
+            <textarea type="text" rows=3 class="form-control" placeholder="Dodaj komentarz" name="content" id="content" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-dark col" style="margin-bottom: 1rem;">Dodaj</button>
+    </div>
+</form>
+{% if comments %}
+    {% for comment in comments %}
+        <div class="container comment w-75 bg-flake">
+            <div class="row">
+                <div class="col text-left h6">{{comment["author"]}}</div>
+                <div class="col text-right small">{{comment["pub_date"].isoformat(' ', "minutes")}}</div>
+            </div>
+            <div class="row">
+                <div class="col">{{comment["content"]}}</div>
+                {% if (current_user.is_anonymous()==False) and ( current_user.get_id()==comment.author ) or (current_user.is_anonymous()==False) and (current_user.level>0) %}<div class="col-md-1 m-0 p-0 btn-group text-right" role="group" aria-lavel="Quick admin">
+                    <a type="button" href="/post?del_com={{comment.id}}" class="btn btn-danger btn-sm">D</a>
+                    {% if current_user.level>0 %}<a href="/userlist?id={{comment.author}}" class="btn btn-info btn-sm">F</a>{% endif %}
+                </div>{% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}

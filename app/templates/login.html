@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg spec bg-flake">
+        <h5>Panel logowania</h5>
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="form-group">
+                <label for="login">Login:</label>
+                <input type="text" class="form-control" name="username" id="login" placeholder="">
+            </div>
+            <div class="form-group">
+                <label for="password">Hasło:</label>
+                <input type="password" class="form-control" name="password" id="password" placeholder="">
+            </div>
+            <button type="submit" class="btn btn-dark">Zaloguj</button>
+        </form>
+    </div>
+    <div class="col-lg spec bg-flake">
+        <h5>Panel rejestracji</h5>
+        <form action="{{ url_for('register') }}" method="POST">
+            <div class="form-group">
+                <label for="reglogin">Login:</label>
+                <input type="text" class="form-control" name="username" id="reglogin" placeholder="Pole obowiązkowe" required>
+            </div>
+            <div class="form-group">
+                <label for="regpassword">Hasło:</label>
+                <input type="password" class="form-control" name="password" id="regpassword" placeholder="Pole obowiązkowe" required>
+            </div>
+            <div class="form-group">
+                <label for="regmail">Adres email:</label>
+                <input type="email" class="form-control" name="email" id="regmail" placeholder="Pole nieobowiązkowe">
+            </div>
+            <button type="submit" class="btn btn-dark">Zarejestruj</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

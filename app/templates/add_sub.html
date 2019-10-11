@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form action="" method="POST">
+        <div class="form-group">
+            <label for="tytuł">Tytuł podforum</label>
+            <input type="text" class="form-control" name="name" id="tytuł" placeholder="Tytuł podforum, pod którym będzie widoczne na listach" required>
+        </div>
+        <input type ="hidden" name="forum" value="{{request.args.get('cat')}}" readonly>
+        <div class="form-group">
+            <label for="tagi">Tagi podforum</label>
+            <input type="text" class="form-control" name="tags" id="tagi" placeholder="Tagi związane z podforum służące do wyszukania go">
+        </div>
+        <div class="form-group">
+            <label for="zawartość">Krótki opis podforum</label>
+            <textarea type="text" class="form-control" name="desc" id="zawartość" placeholder="Tutaj wpisz krótki opis podforum, jak np. czego dotyczy" rows="6" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-dark">Wyślij</button>
+    </form>
+{% endblock %}

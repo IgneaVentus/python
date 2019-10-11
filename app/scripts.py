@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 from app import db, app
 from app.models import User, Post, Comment, Error, Subforum
 

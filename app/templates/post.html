@@ -15,7 +15,7 @@
     <div class="row">
         <div class="col text-left">Autor: {{post.author}}</div>
         <div class="col text-lowercase text-muted text-center">tagi: {{post.tags}}</div>
-        <div class="col text-right">{% if post.is_modified %}[Modyfikowany] {%endif%}{{post.pub_date.isoformat(' ', "minutes")}}</div>
+        <div class="col text-right">{% if post.is_modified() %}[Modyfikowany] {%endif%}{{post.pub_date.isoformat(' ', "minutes")}}</div>
     </div>
     <div class="row">
         <div class="col">{{post.content}}</div>

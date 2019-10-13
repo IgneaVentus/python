@@ -26,11 +26,11 @@ def user_loader(username):
     return User.query.get(username)
 
 @app.route('/')
+def first_index():
+    return redirect(url_for("index", forum="Główna"))
 @app.route('/<forum>', methods=["GET", "POST"])
 def index(forum):
     if request.method=="GET":
-        if not forum: 
-            return redirect(url_for("index", forum="Główna"))
         posts=Post.query.filter_by(forum=forum).order_by(Post.pub_date.desc()).all()
         return render_template("index.html", posts=posts)
     target=request.form["forum_search"]

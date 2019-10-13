@@ -2,19 +2,22 @@
 from app import app, db
 from app.scripts import restart_db, killWeb
 from app.models import User, Post, Comment, Subforum, Error
-from flask_login import LoginManager, login_user, logout_user, current_user, login_required
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required, fresh_login_required
 from flask import Flask, render_template, request, redirect, url_for, session, abort, flash
 from datetime import datetime, timedelta
 from math import floor
 from werkzeug.exceptions import HTTPException
+import re
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
+login_manager.login_message = "Musisz się najpierw zalogować."
+login_manager.login_message_category = "info"
 
 @app.context_processor
 def inject_top5():
-    return dict(top5=Subforum.query.filter(Subforum.approved==True).order_by(Subforum.post_count.desc()).limit(5), Post=Post, Comment=Comment, Subforum=Subforum)
+    return dict(top5=Subforum.query.filter(Subforum.approved.is_(True) & Subforum.name.isnot("General")).order_by(Subforum.post_count.desc()).limit(5), Post=Post, Comment=Comment, Subforum=Subforum, len=len)
 
 @login_manager.user_loader
 def user_loader(username):
@@ -38,19 +41,40 @@ def index():
 def register():
     if request.method=='GET':
         return redirect(url_for("login"))
-    user=User(request.form["username"], request.form["password"], request.form["email"])
-    try:
-        db.session.add(user)
-        db.session.commit()
-        login_user(user)
-        flash("Rejestracja zakończona pomyślnie", category="success")
-    except:
-        flash("Błąd - istnieje użytkownik o takiej nazwie", category="warning")
-    return redirect(url_for("login"))
+    username=request.form["username"]
+    username.strip()
+    username=re.sub("\s{2,}"," ",username)
+    check=re.sub("\s","",username)
+    if(not re.search("\S{3}", check)):
+        flash("Uwaga, nick powinien być dłuższy niż 3 znaki, nie licząc białych znaków.", category="warning")
+        return redirect(url_for("login"))
+    else:
+        check=re.findall("[<>@#$%*&^~\[\]\"\{\}]+", username)
+        if (check):
+            string="Uwaga, nick zawiera nieprawidłowe znaki: "
+            first=True
+            for letter in check:
+                if first:
+                    first=False
+                    string+=letter
+                else:
+                    string+=", "+letter
+            flash(string, category="warning")
+            return redirect(url_for("login"))
+        else:
+            user=User(username, request.form["password"], request.form["email"])
+            try:
+                db.session.add(user)
+                db.session.commit()
+                login_user(user)
+                flash("Rejestracja zakończona pomyślnie", category="success")
+            except:
+                flash("Błąd - istnieje użytkownik o takiej nazwie", category="warning")
+    return redirect(url_for("cpanel"))
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
-    if request.method=='GET' and current_user.is_authenticated:
+    if request.method=='GET' and not current_user.is_anonymous:
         flash ("Już zalogowano!", category="warning")
         return redirect(url_for("index"))
     if request.method == 'GET':
@@ -70,7 +94,10 @@ def login():
         db.session.commit()
     login_user(registered_user)
     flash("Logowanie zakończone sukcesem", category="success")
-    return redirect(url_for("cpanel"))
+    dest_url = request.args.get('next')
+    if not dest_url:
+        dest_url="/cpanel"
+    return redirect(dest_url)
 
 @app.route('/logout')
 def logout():
@@ -102,6 +129,8 @@ def add_post():
         try:
             db.session.add(post)
             db.session.commit()
+            sub=Subforum.query.filter_by(name=post.forum).first()
+            sub.add_count()
             flash("Utworzenie postu powiodło się.", category="success")
             return redirect(url_for("post", id=post.pub_date))
         except:
@@ -130,7 +159,7 @@ def post():
                 com=Comment.query.filter_by(id=request.args.get("del_com")).first()
                 buf=com.target
                 post=Post.query.filter_by(pub_date=buf).first()
-                post.com_count=post.com_count-1
+                post.sub_count()
                 db.session.delete(com)
                 db.session.commit()
                 flash("Komentarz usunięty.", category="success")
@@ -143,7 +172,7 @@ def post():
             for comment in post.comments:
                 db.session.delete(comment)
             sub=Subforum.query.filter_by(name=post.forum).first()
-            sub.post_count=sub.post_count-1
+            sub.sub_count()
             db.session.delete(post)
             db.session.commit()
             flash("Post został usunięty.", category="success")
@@ -161,6 +190,7 @@ def post():
         try:
             target=Post.query.filter(Post.pub_date.contains(request.form["target"])).first()
             new_comment=Comment(target.pub_date,current_user.username, request.form["content"])
+            target.add_count()
             db.session.add(new_comment)
             db.session.commit()
             flash("Komentarz dodany.", category="success")
@@ -168,7 +198,23 @@ def post():
             flash("Błąd. Komentarz nie został dodany.", category="warning")
     return redirect(url_for("post", id=id))
 
+@app.route("/u/<user>")
+@login_required
+def user_profile(user):
+    print(user)
+    user=User.query.filter_by(username=user).first()
+    print(user)
+    if (user):
+        forums=Subforum.query.filter_by(author=user.username).all()
+        posts=Post.query.filter_by(author=user.username).all()
+        comments=Comment.query.filter_by(author=user.username).all()
+        return render_template("user.html", forums=forums, posts=posts, comments=comments, user=user)
+    else:
+        flash("Nie ma takiego użytkownika!", category="warning")
+        return redirect(request.args.get("referer"))
+
 @app.route("/cpanel", methods=["GET","POST"])
+@fresh_login_required
 def cpanel():
     if request.method=="GET":
         forums=Subforum.query.filter_by(author=current_user.username).order_by(Subforum.pub_date.desc()).all()

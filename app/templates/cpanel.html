@@ -97,7 +97,7 @@
                 <tbody>
                     {% for user in userlist %}
                     <tr>
-                        <td>{{user["username"]}}</td>
+                        <td><a href="/u/{{user.username}}">{{user["username"]}}</a></td>
                         <td>
                             {% if user["level"] == 2 %}
                                 Administrator
@@ -109,7 +109,7 @@
                         </td>
                         <td>
                             {% if user["banned"] %}
-                            Tak
+                                {{user["ban_time"]}}
                             {% else %}
                             Nie
                             {% endif %}

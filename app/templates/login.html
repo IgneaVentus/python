@@ -4,9 +4,9 @@
 <div class="row">
     <div class="col-lg spec bg-flake">
         <h5>Panel logowania</h5>
-        <form action="{{ url_for('login') }}" method="POST">
+        <form method="POST">
             <div class="form-group">
-                <label for="login">Login:</label>
+                <label for="login">Nazwa użytkownika:</label>
                 <input type="text" class="form-control" name="username" id="login" placeholder="">
             </div>
             <div class="form-group">
@@ -20,8 +20,9 @@
         <h5>Panel rejestracji</h5>
         <form action="{{ url_for('register') }}" method="POST">
             <div class="form-group">
-                <label for="reglogin">Login:</label>
+                <label for="reglogin">Nazwa użytkownika:</label>
                 <input type="text" class="form-control" name="username" id="reglogin" placeholder="Pole obowiązkowe" required>
+                <small id="regloginhelp" class="formtext text-muted">Nie powinna zawierać znaków specjalnych innych niż -,_,: czy () oraz powinna posiadać ponad trzy znaki</small>
             </div>
             <div class="form-group">
                 <label for="regpassword">Hasło:</label>

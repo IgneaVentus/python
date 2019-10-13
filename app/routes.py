@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 from app import app, db
-from app.scripts import restart_db, killWeb
-from app.models import User, Post, Comment, Subforum, Error
+from app.scripts import restart_db, killWeb, remove_comment, remove_post, remove_user, remove_forum
+from app.models import User, Post, Comment, Subforum, Error, Ban
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required, fresh_login_required
 from flask import Flask, render_template, request, redirect, url_for, session, abort, flash
 from datetime import datetime, timedelta
@@ -14,24 +14,24 @@ login_manager.init_app(app)
 login_manager.login_view = "login"
 login_manager.login_message = "Musisz się najpierw zalogować."
 login_manager.login_message_category = "info"
+login_manager.needs_refresh_message = "Ta strona wymaga ponownego zalogowania"
+login_manager.refresh_view="login"
 
 @app.context_processor
 def inject_top5():
-    return dict(top5=Subforum.query.filter(Subforum.approved.is_(True) & Subforum.name.isnot("General")).order_by(Subforum.post_count.desc()).limit(5), Post=Post, Comment=Comment, Subforum=Subforum, len=len)
+    return dict(top5=Subforum.query.filter(Subforum.approved.is_(True) & Subforum.name.isnot("Główna")).order_by(Subforum.post_count.desc()).limit(5), Post=Post, Comment=Comment, Subforum=Subforum, len=len)
 
 @login_manager.user_loader
 def user_loader(username):
     return User.query.get(username)
 
 @app.route('/')
-@app.route('/index', methods=["GET", "POST"])
-def index():
+@app.route('/<forum>', methods=["GET", "POST"])
+def index(forum):
     if request.method=="GET":
-        if request.args.get('cat'): 
-            category=request.args.get('cat')
-        else:
-            category="General"
-        posts=Post.query.filter_by(forum=category).order_by(Post.pub_date.desc()).all()
+        if not forum: 
+            return redirect(url_for("index", forum="Główna"))
+        posts=Post.query.filter_by(forum=forum).order_by(Post.pub_date.desc()).all()
         return render_template("index.html", posts=posts)
     target=request.form["forum_search"]
     forums=Subforum.query.filter(Subforum.name.contains(target)|Subforum.desc.contains(target)|Subforum.tags.contains(target)).order_by(Subforum.name.asc()).all()
@@ -76,7 +76,10 @@ def register():
 def login():
     if request.method=='GET' and not current_user.is_anonymous:
         flash ("Już zalogowano!", category="warning")
-        return redirect(url_for("index"))
+        dest_url = request.args.get('next')
+        if not dest_url:
+            dest_url="/Główna"
+        return redirect(dest_url)
     if request.method == 'GET':
         return render_template('login.html')
     username=request.form["username"]
@@ -86,9 +89,9 @@ def login():
         flash("Błąd, zła nazwa użytkownika lub hasło", category="warning")
         return redirect(url_for('login'))
     if registered_user.banned:
-        if registered_user.ban_time > datetime.utcnow():
-            time=registered_user.ban_time-datetime.utcnow()
-            flash("Błąd, konto zostało zablokowane przez administratora. Pozostały czas: "+str(time.days)+" dni, "+str(floor(time.seconds/3600))+" godzin i "+str(floor((time.seconds/60)%60))+" minut.", category="warning")
+        ban_time=Ban.query.filter_by(target=registered_user.username).order_by(Ban.time_stop.asc()).first()
+        if ban_time>0:
+            flash("Błąd, konto zostało zablokowane przez administratora. Pozostały czas: "+str(ban_time.days)+" dni, "+str(floor(ban_time.seconds/3600))+" godzin i "+str(floor((ban_time.seconds/60)%60))+" minut.", category="warning")
             return redirect(url_for('login'))
         registered_user.banned=False
         db.session.commit()
@@ -149,41 +152,27 @@ def add_sub():
         flash("Twoje subforum zostało dodane do listy oczekujących na akceptację.", category="success")
     except:
         flash("Błąd: Coś poszło nie tak, spróbuj ponownie później.", category="warning")
-    return redirect(url_for("index", cat="General"))
+    return redirect(url_for("index", forum="Główna"))
 
-@app.route('/post', methods=["GET","POST"])
-def post():
+@app.route('/p/<post>', methods=["GET","POST"])
+def post(post):
     if request.method=="GET" and (request.args.get("del") or request.args.get("del_com")):
         if request.args.get("del_com"):
-            try:
-                com=Comment.query.filter_by(id=request.args.get("del_com")).first()
-                buf=com.target
-                post=Post.query.filter_by(pub_date=buf).first()
-                post.sub_count()
-                db.session.delete(com)
-                db.session.commit()
-                flash("Komentarz usunięty.", category="success")
-            except:
-                flash("Błąd, komentarz nie został usuniey.", category="warning")
-            return redirect(url_for("post", id=buf))
+            com=Comment.query.filter_by(id=request.args.get("del_com")).first()
+            buf=com.target
+            flash("Komentarz usunięty.", category="success") if remove_comment(com) else flash("Błąd, komentarz nie został usunięty.", category="warning")
+            return redirect(url_for("post", post=buf))
         post=Post.query.filter_by(pub_date=request.args.get("del")).first()
         id=post.forum
-        try:
-            for comment in post.comments:
-                db.session.delete(comment)
-            sub=Subforum.query.filter_by(name=post.forum).first()
-            sub.sub_count()
-            db.session.delete(post)
-            db.session.commit()
+        if(remove_post(post)):
             flash("Post został usunięty.", category="success")
-            return redirect(url_for("index", cat=id))
-        except:
+            return redirect(url_for("index", forum=id))
+        else:
             flash("Błąd: Post nie został usunięty.", category="warning")
-            return redirect(url_for("post"+"?id="+id))
+            return redirect(url_for("post",post=id))
     if request.method == "GET":
-        if request.args["id"]:
-            post=Post.query.filter_by(pub_date=request.args.get("id")).first()
-            comments=Comment.query.filter_by(target=post.pub_date).order_by(Comment.pub_date.desc()).all()
+        post=Post.query.filter_by(pub_date=post).first()
+        comments=Comment.query.filter_by(target=post.pub_date).order_by(Comment.pub_date.desc()).all()
         return render_template("post.html", post=post, comments=comments)
     if request.method=="POST":
         id=request.args.get("id")
@@ -196,19 +185,14 @@ def post():
             flash("Komentarz dodany.", category="success")
         except:
             flash("Błąd. Komentarz nie został dodany.", category="warning")
-    return redirect(url_for("post", id=id))
+    return redirect(url_for("post", post=id))
 
 @app.route("/u/<user>")
 @login_required
 def user_profile(user):
-    print(user)
     user=User.query.filter_by(username=user).first()
-    print(user)
     if (user):
-        forums=Subforum.query.filter_by(author=user.username).all()
-        posts=Post.query.filter_by(author=user.username).all()
-        comments=Comment.query.filter_by(author=user.username).all()
-        return render_template("user.html", forums=forums, posts=posts, comments=comments, user=user)
+        return render_template("user.html", user=user)
     else:
         flash("Nie ma takiego użytkownika!", category="warning")
         return redirect(request.args.get("referer"))
@@ -254,12 +238,9 @@ def cpanel():
                 return redirect(url_for("cpanel", user_id=request.form["id"]))
             user=User.query.filter_by(username=request.form["id"]).first()
             if request.form["action_type"] == "del":
-                try:
-                    db.session.delete(user)
-                    db.session.commit()
-                    flash("Usunięto pomyślnie użytkownika "+user.username, category="success")
-                except:
-                    flash("Usunięcie nie powiodło się", category="warning")
+                flash("Usunięto pomyślnie użytkownika "+user.username, category="success") if(remove_user(user, True)) else flash("Usunięcie nie powiodło się", category="warning")
+            if request.form["action_type"] == "del_hard":
+                flash("Usunięto pomyślnie użytkownika "+user.username, category="success") if(remove_user(user, False)) else flash("Usunięcie nie powiodło się", category="warning")
             if request.form["action_type"] == "unban":
                 try:
                     user.banned=False
@@ -269,8 +250,9 @@ def cpanel():
                     flash("Odbanowanie użytkownika "+user.nickname+" zakończone niepowodzeniem.", category="warning")
             if request.form["action_type"] != "del" and request.form["action_type"] != "unban":
                 try:
-                    user.ban_time=datetime.utcnow()+timedelta(days=int(request.form["action_type"]))
+                    ban=Ban(user.username, datetime.utcnow()+timedelta(days=int(request.form["action_type"])))
                     user.banned=True
+                    db.session.add(ban)
                     db.session.commit()
                     flash("Zbanowano pomyślnie na "+request.form["action_type"]+"dni.", category="success")
                 except:
@@ -287,36 +269,20 @@ def cpanel():
                 except:
                     flash("Aktywacja zawiodła", category="warning")
                 return redirect(url_for("cpanel"))
-            try:
-                sub=Subforum.query.filter_by(name=request.form["id"]).first()
-                for post in sub.posts:
-                    for comment in post.comments:
-                        db.session.delete(comment)
-                    db.session.commit()
-                    db.session.delete(post)
-                db.session.commit()
-                sub_name=sub.name
-                db.session.delete(sub)
-                db.session.commit()
-                flash("Pomyślnie usunięto podforum '"+sub_name+"'.", category="success")
-            except:
-                flash("Usunięcie podforum nie powiodło się.", category="warning")
+            sub=Subforum.query.filter_by(name=request.form["id"]).first()
+            sub_name=sub.name
+            flash("Pomyślnie usunięto podforum '"+sub_name+"'.", category="success") if remove_forum(sub) else flash("Usunięcie podforum nie powiodło się.", category="warning")
         if request.form["action_target"]=="post":
-            if request.form["action_type"] == "search":
+            print ("Flag 0")
+            if request.form.get("action_type") == "search":
+                print ("Flag 01")
                 return redirect(url_for("cpanel", post_id=request.form["id"]))
-            try:
-                post=Post.query.filter_by(pub_date=request.form.get("id")).first()
-                for comment in post.comments:
-                    db.session.delete(comment)
-                db.session.commit()
-                post_title=post.title
-                sub=Subforum.query.filter_by(name=post.forum).first()
-                sub.post_count=sub.post_count-1
-                db.session.delete(post)
-                db.session.commit()
-                flash("Pomyślnie usunięto post '"+post_title+"'.", category="success")
-            except:
-                flash("Usunięcie postu nie powiodło się.", category="warning")
+            print ("Flag 02")
+            post=Post.query.filter_by(pub_date=request.form.get("id")).first()
+            print ("Flag 1")
+            post_title=post.title
+            print ("Flag 2")
+            flash("Pomyślnie usunięto post '"+post_title+"'.", category="success") if remove_post(post) else flash("Usunięcie postu nie powiodło się.", category="warning")
         if request.form["action_target"]=="error":
             if request.form.get("delAll"):
                 try:
@@ -337,6 +303,7 @@ def cpanel():
                     flash("Usunięcie błędu nie powiodło się.", category="warning")
     if request.form.get("admin"):
         if request.form["admin"]=="0":
+            logout_user()
             restart_db()
         if request.form["admin"]=="1":
             killWeb()
@@ -353,4 +320,4 @@ def error404(e):
         flash("Wygląda na to, że coś się zepsuło. Problem został zarejestrowany.", category="warning")
     except:
         flash("Wygląda na to, że coś się zepsuło.", category="warning")
-    return redirect(url_for("index", cat="General"))
+    return redirect(url_for("index", forum="Główna"))

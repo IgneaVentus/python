@@ -9,14 +9,14 @@ class User(db.Model):
     creation_date = db.Column(db.DateTime)
     authenticated = db.Column(db.Boolean, default=False)
     banned = db.Column(db.Boolean, default=False)
-    ban_time = db.Column(db.DateTime)
     level = db.Column(db.SmallInteger, default=0)
 
     posts = db.relationship("Post", backref=db.backref("user_posts",lazy=True))
     comments = db.relationship("Comment", backref=db.backref("user_comments",lazy=True))
     subforums = db.relationship("Subforum", backref=db.backref("created_forums", lazy=True))
+    bans = db.relationship("Ban", backref=db.backref("user-bans", lazy=True))
     
-    def __init__(self, username, password, email):
+    def __init__(self, username, password, email=None):
         self.username=username
         self.password=password
         self.mail=email
@@ -36,16 +36,6 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.username
-
-    def is_mod(self):
-        if self.level==1:
-            return True
-        return False
-
-    def is_admin(self):
-        if self.level==2:
-            return True
-        return False
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -92,6 +82,9 @@ class Post(db.Model):
     def is_modified(self):
         return self.modified
 
+    def child_count(self):
+        return len(self.comments)
+    
     def add_count(self):
         self.com_count=self.com_count+1
         return True
@@ -108,7 +101,7 @@ class Subforum(db.Model):
     pub_date = db.Column(db.DateTime, default=datetime.utcnow)
     post_count = db.Column(db.Integer, default=0)
     approved = db.Column(db.Boolean, default=False)
-    
+    sticky = db.Column(db.Boolean, default=False)
     posts = db.relationship('Post',backref=db.backref('posts',lazy=True))
 
     def __init__(self, author, name, tags, desc):
@@ -123,10 +116,23 @@ class Subforum(db.Model):
     def add_count(self):
         self.post_count=self.post_count+1
         return True
-    
+
     def sub_count(self):
         self.post_count=self.post_count-1
         return True
+
+class Ban(db.Model):
+    id=db.Column(db.Integer, primary_key=True)
+    target=db.Column(db.String(25), db.ForeignKey("user.username"), nullable=False)
+    time_start=db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    time_stop=db.Column(db.DateTime, nullable=False)
+
+    def __init__(self, target, time_stop):
+        self.target=target
+        self.time_stop=time_stop
+
+    def time_left(self):
+        return self.time_stop-datetime.utcnow
 
 class Error(db.Model):
     date=db.Column(db.DateTime, primary_key=True, default=datetime.utcnow)

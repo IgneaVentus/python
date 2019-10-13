@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 today=datetime.utcnow()
 post=Post.query.first()
 
-posts=Post.query.filter((today-Post.pub_date)>timedelta(days=14)).all()
+posts=Post.query.filter((today-Post.pub_date)>timedelta(days=14) & Post.sticky.isnot(True)).all()
 i=0
 for post in posts:
     for comment in post.comments:

@@ -13,12 +13,12 @@
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <a class="navbar-brand dropdown-toggle abs" id="maindropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/index?cat=General">Bajinga!</a>
+      <a class="navbar-brand dropdown-toggle abs" id="maindropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/Główna">Bajinga!</a>
       <div class="dropdown-menu" aria-labelledby="maindropdown">
-          <a class="dropdown-item" href="/index?cat=General">Główna</a>
+          <a class="dropdown-item" href="/Główna">Główna</a>
           <div class="dropdown-divider"></div>
           {% for forum in top5 %}
-          <a class="dropdown-item" href="/index?cat={{forum.name}}">{{forum.name}}</a>
+          <a class="dropdown-item" href="/{{forum.name}}">{{forum.name}}</a>
           {% endfor %}
       </div>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">

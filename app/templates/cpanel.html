@@ -126,6 +126,7 @@
                                       <option value=180>Ban, pół roku</option>
                                       <option value="unban">Usunięcie bana</option>
                                       <option value="del">Usunięcie konta</option>
+                                      <option value="del_hard">Usunięcie całości konta</option>
                                     </select>
                                     <button type="submit" class="btn btn-outline-danger col-lg-4" name="id" value="{{user.username}}">Wykonaj</button>
                                 </div>
@@ -203,7 +204,7 @@
                 <tbody>
                     {% for post in postlist %}
                     <tr>
-                        <td><a href="/post?id={{post['pub_date']}}">{{post["title"]}}</a></td>
+                        <td><a href="/p/{{post['pub_date']}}">{{post["title"]}}</a></td>
                         <td>
                             {{post["com_count"]}}
                         </td>

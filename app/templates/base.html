@@ -25,8 +25,8 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
-      {% if request.args.get("cat") and current_user.is_authenticated %}
-      <a href="/add_post?cat={{request.args.get('cat')}}" class="nav-link btn btn-outline-primary">Dodaj post</a>
+      {% if current_user.is_authenticated %}
+      <a href="/{{forum}}/add_post" class="nav-link btn btn-outline-primary">Dodaj post</a>
       {% endif %}
       <ul class="navbar-nav ml-auto">
         <li class="nav-item">

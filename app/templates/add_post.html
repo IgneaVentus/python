@@ -6,7 +6,7 @@
             <label for="tytuł">Tytuł</label>
             <input type="text" class="form-control" name="title" id="tytuł" placeholder="Tytuł posta" {% if modpost %} value="{{modpost.title}}" {% endif %} required>
         </div>
-        <input type ="hidden" name="forum" {% if modpost %} value="{{modpost.forum}}" {% else %} value="{{request.args.get('cat')}}" {% endif %} readonly>
+        <input type ="hidden" name="forum" {% if modpost %} value="{{modpost.forum}}" {% else %} value="{{forum}}" {% endif %} readonly>
         <div class="form-group">
             <label for="tagi">Tagi</label>
             <input type="text" class="form-control" name="tags" id="tagi" placeholder="Tagi związane z postem" {% if modpost %} value="{{modpost.tags}}" {% endif %}>

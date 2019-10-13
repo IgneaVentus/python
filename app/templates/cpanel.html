@@ -37,7 +37,7 @@
         {% for forum in forums %}
             <div class="card post_list">
                 <div class="card text-white bg-flake">
-                    <h5 class="card-title"><a href="/index?cat={{forum.name}}">{{forum["name"]}}</a></h5>
+                    <h5 class="card-title"><a href="/{{forum.name}}">{{forum["name"]}}</a></h5>
                     <h6 class="card-subtitle mb-2 text-muted">{{forum["tags"]}}</h6>
                     <p class="card=text">{{forum["desc"]}}</p>
                 </div>
@@ -159,7 +159,7 @@
                 <tbody>
                     {% for sub in sublist %}
                     <tr>
-                        <td><a href="/index?cat={{sub['name']}}">{{sub["name"]}}</a></td>
+                        <td><a href="/{{sub['name']}}">{{sub["name"]}}</a></td>
                         <td>
                             {{sub["post_count"]}}
                         </td>

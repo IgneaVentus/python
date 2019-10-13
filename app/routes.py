@@ -26,16 +26,16 @@ def user_loader(username):
     return User.query.get(username)
 
 @app.route('/')
-def first_index():
-    return redirect(url_for("index", forum="Główna"))
+def index():
+    return redirect(url_for("forum", forum="Główna"))
 @app.route('/<forum>', methods=["GET", "POST"])
-def index(forum):
+def forum(forum):
     if request.method=="GET":
         posts=Post.query.filter_by(forum=forum).order_by(Post.pub_date.desc()).all()
-        return render_template("index.html", posts=posts)
+        return render_template("index.html", forum=forum,  posts=posts)
     target=request.form["forum_search"]
     forums=Subforum.query.filter(Subforum.name.contains(target)|Subforum.desc.contains(target)|Subforum.tags.contains(target)).order_by(Subforum.name.asc()).all()
-    return render_template("index.html", forums=forums)
+    return render_template("index.html", forum=forum, forums=forums)
 
 @app.route('/register', methods=["GET", "POST"])
 def register():
@@ -108,13 +108,13 @@ def logout():
     flash ("Wylogowano pomyślnie", category="success")
     return redirect(url_for("login"))   
 
-@app.route('/add_post', methods=["GET", "POST"])
+@app.route('/<forum>/add_post', methods=["GET", "POST"])
 @login_required
-def add_post():
+def add_post(forum):
     if request.method == "GET" and request.args.get("id"):
-        return render_template("add_post.html", modpost=Post.query.filter_by(pub_date=request.args.get("id")).first())
+        return render_template("add_post.html", forum=forum, modpost=Post.query.filter_by(pub_date=request.args.get("id")).first())
     if request.method == "GET":
-        return render_template("add_post.html")
+        return render_template("add_post.html", forum=forum)
     if request.method == "POST" and request.form["mod"]=="True":
         post = Post.query.filter_by(pub_date=request.args.get("id")).first()
         post.title=request.form["title"]
@@ -138,7 +138,7 @@ def add_post():
             return redirect(url_for("post", id=post.pub_date))
         except:
             flash("Utworzenie postu nie powiodło się.", category="warning")
-    return redirect(url_for("add_post"))
+    return redirect(url_for("add_post", forum=forum))
 
 @app.route("/add_sub", methods=["GET","POST"])
 @login_required
@@ -152,7 +152,7 @@ def add_sub():
         flash("Twoje subforum zostało dodane do listy oczekujących na akceptację.", category="success")
     except:
         flash("Błąd: Coś poszło nie tak, spróbuj ponownie później.", category="warning")
-    return redirect(url_for("index", forum="Główna"))
+    return redirect(url_for("forum", forum="Główna"))
 
 @app.route('/p/<post>', methods=["GET","POST"])
 def post(post):
@@ -166,7 +166,7 @@ def post(post):
         id=post.forum
         if(remove_post(post)):
             flash("Post został usunięty.", category="success")
-            return redirect(url_for("index", forum=id))
+            return redirect(url_for("forum", forum=id))
         else:
             flash("Błąd: Post nie został usunięty.", category="warning")
             return redirect(url_for("post",post=id))
@@ -320,4 +320,4 @@ def error404(e):
         flash("Wygląda na to, że coś się zepsuło. Problem został zarejestrowany.", category="warning")
     except:
         flash("Wygląda na to, że coś się zepsuło.", category="warning")
-    return redirect(url_for("index", forum="Główna"))
+    return redirect(url_for("forum", forum="Główna"))

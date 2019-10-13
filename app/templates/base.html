@@ -25,7 +25,7 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
-      {% if current_user.is_authenticated %}
+      {% if current_user.is_authenticated and "cpanel" not in request.path and "add_post" not in request.path and "/p/" not in request.path and "/u/" not in request.path %}
       <a href="/{{forum}}/add_post" class="nav-link btn btn-outline-primary">Dodaj post</a>
       {% endif %}
       <ul class="navbar-nav ml-auto">

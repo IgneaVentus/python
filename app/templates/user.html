@@ -32,7 +32,7 @@
                         {% for forum in user.subforums %}
                             <div class="card post_list">
                                 <div class="card text-white bg-flake">
-                                    <h5 class="card-title"><a href="/index?cat={{forum.name}}">{{forum["name"]}}</a></h5>
+                                    <h5 class="card-title"><a href="/{{forum.name}}">{{forum["name"]}}</a></h5>
                                     <h6 class="card-subtitle mb-2 text-muted">{{forum["tags"]}}</h6>
                                     <p class="card=text">{{forum["desc"]}}</p>
                                 </div>
@@ -47,7 +47,7 @@
                         {% for post in user.posts %}
                             <div class="card post_list">
                                 <div class="card text-white bg-flake">
-                                    <h5 class="card-title"><a href="/post?id={{post.pub_date}}">{{post["title"]}}</a></h5>
+                                    <h5 class="card-title"><a href="/p/{{post.pub_date}}">{{post["title"]}}</a></h5>
                                     <h6 class="card-subtitle mb-2 text-muted">{{post["tags"]}}</h6>
                                     <p class="card=text">{{post["content"]}}</p>
                                 </div>
@@ -62,7 +62,7 @@
                         {% for comment in user.comments %}
                             <div class="card post_list">
                                 <div class="card text-white bg-flake">
-                                    <h5 class="card-title"><a href="/post?id={{comment.target}}">{{Post.query.filter_by(pub_date=comment.target).first().title}}</a></h5>
+                                    <h5 class="card-title"><a href="/p/{{comment.target}}">{{Post.query.filter_by(pub_date=comment.target).first().title}}</a></h5>
                                     <h6 class="card-subtitle mb-2 text-muted">{{comment["pub_date"].isoformat(' ', "minutes")}}</h6>
                                     <p class="card=text">{{comment["content"]}}</p>
                                 </div>

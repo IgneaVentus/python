@@ -159,10 +159,9 @@ def post(post):
     if request.method=="GET" and (request.args.get("del") or request.args.get("del_com")):
         if request.args.get("del_com"):
             com=Comment.query.filter_by(id=request.args.get("del_com")).first()
-            buf=com.target
             flash("Komentarz usunięty.", category="success") if remove_comment(com) else flash("Błąd, komentarz nie został usunięty.", category="warning")
-            return redirect(url_for("post", post=buf))
-        post=Post.query.filter_by(pub_date=request.args.get("del")).first()
+            return redirect(url_for("post", post=post))
+        post=Post.query.filter_by(pub_date=post).first()
         id=post.forum
         if(remove_post(post)):
             flash("Post został usunięty.", category="success")

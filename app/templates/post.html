@@ -6,8 +6,8 @@
         <div class="col-md-11 h5">{{post.title}}</div>
         {% if (current_user.is_authenticated) and ( current_user.get_id()==post.author ) or (current_user.is_authenticated) and (current_user.level>0) %}
         <div class="col-md-1 btn-group text-right" role="group" aria-lavel="Quick admin">
-            <a href="/add_post?id={{post['pub_date']}}" class="btn btn-primary btn-sm" data-toggle="tooltip" data-placement="top" title="Modyfikuj">M</a>
-            <a href="/post?del={{post['pub_date']}}" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="top" title="Usuń">D</a>
+            <a href="/{{post.forum}}/add_post?id={{post['pub_date']}}" class="btn btn-primary btn-sm" data-toggle="tooltip" data-placement="top" title="Modyfikuj">M</a>
+            <a href="/p/{{post.pub_date}}?del=True" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="top" title="Usuń">D</a>
         </div>
         {% endif %}
     </div>
@@ -45,7 +45,7 @@
             </div>
             <div class="row">
                 <div class="col-md-11">{{comment["content"]}}</div>
-                {% if (current_user.is_authenticated) and ( current_user.get_id()==comment.author ) or (current_user.is_authenticated) and (current_user.level>0) %}<a type="button" href="/post?del_com={{comment.id}}" class="col-md-1 text-center btn btn-danger btn-sm">Usuń</a>{% endif %}
+                {% if (current_user.is_authenticated) and ( current_user.get_id()==comment.author ) or (current_user.is_authenticated) and (current_user.level>0) %}<a type="button" href="/p/{{post.pub_date}}?del_com={{comment.id}}" class="col-md-1 text-center btn btn-danger btn-sm">Usuń</a>{% endif %}
             </div>
         </div>
     {% endfor %}

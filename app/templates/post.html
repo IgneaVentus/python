@@ -22,7 +22,6 @@
 </div>
 {% if current_user.is_authenticated %}
 <form action="" method="POST">
-    <input type="hidden" name="target" value="{{post.pub_date}}">
     <div class="form-row">
         <div class="form-group col-10">
             <textarea type="text" rows=3 class="form-control" placeholder="Dodaj komentarz" name="content" id="content" required></textarea>
@@ -37,7 +36,14 @@
 </div>
 {%endif%}
 {% if comments %}
-    {% for comment in comments %}
+    {% if comments.pages>1 %} <nav aria-label="pagination controls">
+        <ul class="pagination pagination-sm justify-content-center">
+            {% if comments.has_prev %}<li class="page-item"><a class="page-link bg-dark border-0" href="/p/{{post.pub_date}}?p={{comments.prev_num}}">&laquo;</a></li>{% endif %}
+            {% for page in comments.iter_pages() %}{% if page<=comments.pages and page>0 %}<li class="page-item {% if page==comments.page %}active{%endif%}"><a class="page-link bg-dark border-0" href="/p/{{post.pub_date}}?p={{page}}">{{page}}</a></li>{% endif %}{%endfor%}
+            {% if comments.has_next %}<li class="page-item"><a class="page-link bg-dark border-0" href="/p/{{post.pub_date}}?p={{comments.next_num}}">&raquo;</a></li>{% endif %}
+        </ul>
+    </nav>{%endif%}
+    {% for comment in comments.items %}
         <div class="container comment w-75 bg-flake">
             <div class="row">
                 <a href="/u/{{comment['author']}}" class="col-md-10 text-left h6">{{comment["author"]}}</a>

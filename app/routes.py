@@ -25,13 +25,12 @@ def inject_top5():
 def user_loader(username):
     return User.query.get(username)
 
-@app.route('/')
-def index():
-    return redirect(url_for("forum", forum="Główna"))
-@app.route('/<forum>', methods=["GET", "POST"])
-def forum(forum):
+@app.route('/', defaults={"forum": "Główna"})
+@app.route('/<forum>', defaults={"p": 1})
+@app.route('/<forum>/<int:p>', methods=["GET", "POST"])
+def index(forum, p):
     if request.method=="GET":
-        posts=Post.query.filter_by(forum=forum).order_by(Post.pub_date.desc()).all()
+        posts=Post.query.filter_by(forum=forum).order_by(Post.pub_date.desc()).paginate(p,15,False)
         return render_template("index.html", forum=forum,  posts=posts)
     target=request.form["forum_search"]
     forums=Subforum.query.filter(Subforum.name.contains(target)|Subforum.desc.contains(target)|Subforum.tags.contains(target)).order_by(Subforum.name.asc()).all()
@@ -152,7 +151,7 @@ def add_sub():
         flash("Twoje subforum zostało dodane do listy oczekujących na akceptację.", category="success")
     except:
         flash("Błąd: Coś poszło nie tak, spróbuj ponownie później.", category="warning")
-    return redirect(url_for("forum", forum="Główna"))
+    return redirect(url_for("index", forum="Główna"))
 
 @app.route('/p/<post>', methods=["GET","POST"])
 def post(post):
@@ -161,22 +160,22 @@ def post(post):
             com=Comment.query.filter_by(id=request.args.get("del_com")).first()
             flash("Komentarz usunięty.", category="success") if remove_comment(com) else flash("Błąd, komentarz nie został usunięty.", category="warning")
             return redirect(url_for("post", post=post))
-        post=Post.query.filter_by(pub_date=post).first()
-        id=post.forum
-        if(remove_post(post)):
+        target=Post.query.filter_by(pub_date=post).first()
+        buf=target.forum
+        if(remove_post(target)):
             flash("Post został usunięty.", category="success")
-            return redirect(url_for("forum", forum=id))
+            return redirect(url_for("index", forum=buf))
         else:
             flash("Błąd: Post nie został usunięty.", category="warning")
-            return redirect(url_for("post",post=id))
+            return redirect(url_for("post",post=post))
     if request.method == "GET":
+        page=request.args.get("p", 1, type=int)
         post=Post.query.filter_by(pub_date=post).first()
-        comments=Comment.query.filter_by(target=post.pub_date).order_by(Comment.pub_date.desc()).all()
+        comments=Comment.query.filter_by(target=post.pub_date).order_by(Comment.pub_date.desc()).paginate(page,10,False)
         return render_template("post.html", post=post, comments=comments)
     if request.method=="POST":
-        id=request.args.get("id")
         try:
-            target=Post.query.filter(Post.pub_date.contains(request.form["target"])).first()
+            target=Post.query.filter(Post.pub_date.contains(post)).first()
             new_comment=Comment(target.pub_date,current_user.username, request.form["content"])
             target.add_count()
             db.session.add(new_comment)
@@ -184,14 +183,17 @@ def post(post):
             flash("Komentarz dodany.", category="success")
         except:
             flash("Błąd. Komentarz nie został dodany.", category="warning")
-    return redirect(url_for("post", post=id))
+    return redirect(url_for("post", post=post))
 
 @app.route("/u/<user>")
 @login_required
 def user_profile(user):
     user=User.query.filter_by(username=user).first()
+    subforums=Subforum.query.filter_by(author=user.username).order_by(Subforum.pub_date.desc()).paginate(request.args.get("pf", 1, type=int),10,False)
+    posts=Post.query.filter_by(author=user.username).order_by(Post.pub_date.desc()).paginate(request.args.get("pp", 1, type=int),10,False)
+    comments=Comment.query.filter_by(author=user.username).order_by(Comment.pub_date.desc()).paginate(request.args.get("pc", 1, type=int),10,False)
     if (user):
-        return render_template("user.html", user=user)
+        return render_template("user.html", user=user, subforums=subforums, posts=posts, comments=comments)
     else:
         flash("Nie ma takiego użytkownika!", category="warning")
         return redirect(request.args.get("referer"))
@@ -200,23 +202,23 @@ def user_profile(user):
 @fresh_login_required
 def cpanel():
     if request.method=="GET":
-        forums=Subforum.query.filter_by(author=current_user.username).order_by(Subforum.pub_date.desc()).all()
-        posts=Post.query.filter_by(author=current_user.username).order_by(Post.pub_date.desc()).all()
-        comments=Comment.query.filter_by(author=current_user.username).order_by(Comment.pub_date.desc()).all()
+        forums=Subforum.query.filter_by(author=current_user.username).order_by(Subforum.pub_date.desc()).paginate(request.args.get("pf", 1, type=int),10,False)
+        posts=Post.query.filter_by(author=current_user.username).order_by(Post.pub_date.desc()).paginate(request.args.get("pp", 1, type=int),10,False)
+        comments=Comment.query.filter_by(author=current_user.username).order_by(Comment.pub_date.desc()).paginate(request.args.get("pc", 1, type=int),10,False)
         if current_user.level>0:
             if request.args.get("user_id"):
-                userlist=User.query.filter(User.username.contains(request.args["user_id"])).order_by(User.creation_date.desc()).all()
+                userlist=User.query.filter(User.username.contains(request.args["user_id"])).order_by(User.creation_date.desc()).paginate(request.args.get("pul", 1, type=int),10,False)
             else:
-                userlist=User.query.order_by(User.creation_date.desc()).limit(50)
+                userlist=User.query.order_by(User.creation_date.desc()).paginate(request.args.get("pul", 1, type=int),10,False)
             if request.args.get("sub_id"):
-                sublist=Subforum.query.filter(Subforum.name.contains(request.args["sub_id"]) | Subforum.tags.contains(request.args["sub_id"]) | Subforum.desc.contains(request.args["sub_id"])).order_by(Subforum.pub_date.desc()).all()
+                sublist=Subforum.query.filter(Subforum.name.contains(request.args["sub_id"]) | Subforum.tags.contains(request.args["sub_id"]) | Subforum.desc.contains(request.args["sub_id"])).order_by(Subforum.pub_date.desc()).paginate(request.args.get("psl", 1, type=int),10,False)
             else:
-                sublist=Subforum.query.order_by(Subforum.pub_date.desc()).limit(50)
+                sublist=Subforum.query.order_by(Subforum.pub_date.desc()).paginate(request.args.get("psl", 1, type=int),10,False)
             if request.args.get("post_id"):
-                postlist=Post.query.filter(Post.title.contains(request.args["post_id"]) | Post.tags.contains(request.args["post_id"] | Post.content.contains(request.args["post_id"]))).order_by(Post.pub_date.desc()).limit(50)
+                postlist=Post.query.filter(Post.title.contains(request.args["post_id"]) | Post.tags.contains(request.args["post_id"] | Post.content.contains(request.args["post_id"]))).order_by(Post.pub_date.desc()).paginate(request.args.get("ppl", 1, type=int),10,False)
             else:
-                postlist=Post.query.order_by(Post.pub_date.desc()).limit(50)
-            errorlist=Error.query.order_by(Error.date.desc()).limit(50)
+                postlist=Post.query.order_by(Post.pub_date.desc()).paginate(request.args.get("ppl", 1, type=int),10,False)
+            errorlist=Error.query.order_by(Error.date.desc()).paginate(request.args.get("pel", 1, type=int),10,False)
             return render_template("cpanel.html",forums=forums, posts=posts, comments=comments, userlist=userlist, sublist=sublist, postlist=postlist, errorlist=errorlist)
         return render_template("cpanel.html",forums=forums, posts=posts, comments=comments)
     if request.form.get("pass1"):
@@ -319,4 +321,4 @@ def error404(e):
         flash("Wygląda na to, że coś się zepsuło. Problem został zarejestrowany.", category="warning")
     except:
         flash("Wygląda na to, że coś się zepsuło.", category="warning")
-    return redirect(url_for("forum", forum="Główna"))
+    return redirect(url_for("index", forum="Główna"))

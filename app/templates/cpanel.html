@@ -34,7 +34,14 @@
         </div>
         <div class="tab-pane fade" id="v-pills-forums" role="tabpanel" aria-labelledby="v-pills-forums-tab">
         {% if forums %}
-        {% for forum in forums %}
+        {% if forums.pages>1 %} <nav aria-label="pagination controls userlist">
+            <ul class="pagination pagination-sm justify-content-center">
+                {% if forums.has_prev %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pf={{forums.prev_num}}">&laquo;</a></li>{% endif %}
+                {% for page in forums.iter_pages() %}{% if page<=forums.pages and page>0 %}<li class="page-item {% if page==forums.page %}active{%endif%}"><a class="page-link bg-dark border-0" href="/cpanel?pf={{page}}">{{page}}</a></li>{% endif %}{%endfor%}
+                {% if forums.has_next %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pf={{forums.next_num}}">&raquo;</a></li>{% endif %}
+            </ul>
+        </nav>{%endif%}
+        {% for forum in forums.items %}
             <div class="card post_list">
                 <div class="card text-white bg-flake">
                     <h5 class="card-title"><a href="/{{forum.name}}">{{forum["name"]}}</a></h5>
@@ -49,7 +56,14 @@
         </div>
         <div class="tab-pane fade" id="v-pills-posts" role="tabpanel" aria-labelledby="v-pills-posts-tab">
         {% if posts %}
-        {% for post in posts %}
+        {% if posts.pages>1 %} <nav aria-label="pagination controls userlist">
+            <ul class="pagination pagination-sm justify-content-center">
+                {% if posts.has_prev %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pp={{posts.prev_num}}">&laquo;</a></li>{% endif %}
+                {% for page in posts.iter_pages() %}{% if page<=posts.pages and page>0 %}<li class="page-item {% if page==posts.page %}active{%endif%}"><a class="page-link bg-dark border-0" href="/cpanel?pp={{page}}">{{page}}</a></li>{% endif %}{%endfor%}
+                {% if posts.has_next %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pp={{posts.next_num}}">&raquo;</a></li>{% endif %}
+            </ul>
+        </nav>{%endif%}
+        {% for post in posts.items %}
             <div class="card post_list">
                 <div class="card text-white bg-flake">
                     <h5 class="card-title"><a href="/post?id={{post.pub_date}}">{{post["title"]}}</a></h5>
@@ -64,7 +78,14 @@
         </div>
         <div class="tab-pane fade" id="v-pills-comments" role="tabpanel" aria-labelledby="v-pills-comments-tab">
         {% if comments %}
-        {% for comment in comments %}
+        {% if comments.pages>1 %} <nav aria-label="pagination controls userlist">
+            <ul class="pagination pagination-sm justify-content-center">
+                {% if comments.has_prev %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pc={{comments.prev_num}}">&laquo;</a></li>{% endif %}
+                {% for page in comments.iter_pages() %}{% if page<=comments.pages and page>0 %}<li class="page-item {% if page==comments.page %}active{%endif%}"><a class="page-link bg-dark border-0" href="/cpanel?pc={{page}}">{{page}}</a></li>{% endif %}{%endfor%}
+                {% if comments.has_next %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pc={{comments.next_num}}">&raquo;</a></li>{% endif %}
+            </ul>
+        </nav>{%endif%}
+        {% for comment in comments.items %}
             <div class="card post_list">
                 <div class="card text-white bg-flake">
                     <h5 class="card-title"><a href="/post?id={{comment.target}}">{{Post.query.filter_by(pub_date=comment.target).first().title}}</a></h5>
@@ -85,6 +106,13 @@
                     <button type="submit" class="btn btn-primary col" name="action_type" value="search">Szukaj</button>
                 </div>
             </form>
+            {% if userlist.pages>1 %} <nav aria-label="pagination controls userlist">
+                <ul class="pagination pagination-sm justify-content-center">
+                    {% if userlist.has_prev %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pul={{userlist.prev_num}}">&laquo;</a></li>{% endif %}
+                    {% for page in userlist.iter_pages() %}{% if page<=userlist.pages and page>0 %}<li class="page-item {% if page==userlist.page %}active{%endif%}"><a class="page-link bg-dark border-0" href="/cpanel?pul={{page}}">{{page}}</a></li>{% endif %}{%endfor%}
+                    {% if userlist.has_next %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pul={{userlist.next_num}}">&raquo;</a></li>{% endif %}
+                </ul>
+            </nav>{%endif%}
             <table class="table text-center">
                 <thead>
                     <tr>
@@ -95,7 +123,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for user in userlist %}
+                    {% for user in userlist.items %}
                     <tr>
                         <td><a href="/u/{{user.username}}">{{user["username"]}}</a></td>
                         <td>
@@ -146,6 +174,13 @@
                     <button type="submit" class="btn btn-primary col" name="action_type" value="search">Szukaj</button>
                 </div>
             </form>
+            {% if sublist.pages>1 %} <nav aria-label="pagination controls subs">
+                <ul class="pagination pagination-sm justify-content-center">
+                    {% if sublist.has_prev %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?psl={{sublist.prev_num}}">&laquo;</a></li>{% endif %}
+                    {% for page in sublist.iter_pages() %}{% if page<=sublist.pages and page>0 %}<li class="page-item {% if page==sublist.page %}active{%endif%}"><a class="page-link bg-dark border-0" href="/cpanel?psl={{page}}">{{page}}</a></li>{% endif %}{%endfor%}
+                    {% if sublist.has_next %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?psl={{sublist.next_num}}">&raquo;</a></li>{% endif %}
+                </ul>
+            </nav>{%endif%}
             <table class="table text-center">
                 <thead>
                     <tr>
@@ -157,7 +192,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for sub in sublist %}
+                    {% for sub in sublist.items %}
                     <tr>
                         <td><a href="/{{sub['name']}}">{{sub["name"]}}</a></td>
                         <td>
@@ -192,6 +227,13 @@
                     <button type="submit" class="btn btn-primary col" name="action_type" value="search">Szukaj</button>
                 </div>
             </form>
+            {% if postlist.pages>1 %} <nav aria-label="pagination controls subs">
+                <ul class="pagination pagination-sm justify-content-center">
+                    {% if postlist.has_prev %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?ppl={{postlist.prev_num}}">&laquo;</a></li>{% endif %}
+                    {% for page in sublist.iter_pages() %}{% if page<=postlist.pages and page>0 %}<li class="page-item {% if page==postlist.page %}active{%endif%}"><a class="page-link bg-dark border-0" href="/cpanel?ppl={{page}}">{{page}}</a></li>{% endif %}{%endfor%}
+                    {% if postlist.has_next %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?ppl={{postlist.next_num}}">&raquo;</a></li>{% endif %}
+                </ul>
+            </nav>{%endif%}
             <table class="table text-center">
                 <thead>
                     <tr>
@@ -202,7 +244,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for post in postlist %}
+                    {% for post in postlist.items %}
                     <tr>
                         <td><a href="/p/{{post['pub_date']}}">{{post["title"]}}</a></td>
                         <td>
@@ -225,6 +267,13 @@
             </table>
         </div>
         <div class="tab-pane fade" id="v-pills-errlist" role="tabpanel" aria-labelledby="v-pills-errlist-tab">
+            {% if errorlist.pages>1 %} <nav aria-label="pagination controls subs">
+                <ul class="pagination pagination-sm justify-content-center">
+                    {% if errorlist.has_prev %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pel={{errorlist.prev_num}}">&laquo;</a></li>{% endif %}
+                    {% for page in errorlist.iter_pages() %}{% if page<=errorlist.pages and page>0 %}<li class="page-item {% if page==errorlist.page %}active{%endif%}"><a class="page-link bg-dark border-0" href="/cpanel?pel={{page}}">{{page}}</a></li>{% endif %}{%endfor%}
+                    {% if errorlist.has_next %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pel={{errorlist.next_num}}">&raquo;</a></li>{% endif %}
+                </ul>
+            </nav>{%endif%}
             <table class="table text-center">
                 <thead>
                     <tr>
@@ -237,7 +286,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for error in errorlist %}
+                    {% for error in errorlist.items %}
                     <tr>
                         <td>{{error["code"]}}</td>
                         <td>

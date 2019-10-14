@@ -2,7 +2,14 @@
 
 {% block content %}
 {% if posts %}
-    {% for post in posts %}
+    {% if posts.pages>1 %} <nav aria-label="pagination controls">
+        <ul class="pagination pagination-sm justify-content-center">
+            {% if posts.has_prev %}<li class="page-item"><a class="page-link bg-dark border-0" href="/p/{{post.pub_date}}?p={{posts.prev_num}}">&laquo;</a></li>{% endif %}
+            {% for page in posts.iter_pages() %}{% if page<=posts.pages and page>0 %}<li class="page-item {% if page==posts.page %}active{%endif%}"><a class="page-link bg-dark border-0" href="/p/{{post.pub_date}}?p={{page}}">{{page}}</a></li>{% endif %}{%endfor%}
+            {% if posts.has_next %}<li class="page-item"><a class="page-link bg-dark border-0" href="/p/{{post.pub_date}}?p={{posts.next_num}}">&raquo;</a></li>{% endif %}
+        </ul>
+    </nav>{%endif%}
+    {% for post in posts.items %}
         <div class="card post_list">
             <div class="card text-white bg-flake">
                 <h5 class="card-title"><a href="/p/{{post.pub_date}}">{{post["title"]}}</a></h5>

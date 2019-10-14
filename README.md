@@ -7,11 +7,11 @@ project. What I aim for is a hybrid between 4chan and reddit - any user can crea
 Now, You are free to use it, modify it or whatever. The only requirement is for You to give me credit, that's all I want.
 
 To do:
-- Fix "Modified" tag at post.html
+- [Done] Fix "Modified" tag at post.html
 - Move aPanel to different html
-- Simplify routes
+- [Done] Simplify routes
 - Add pagination
-- Add possibility for "sticky", non-deletable (for script) posts
+- [Done] Add possibility for "sticky", non-deletable (for script) posts
 - Add basic mail functionality for users
 - Add basic notepad functionality for users
 - Add favorite posts functionality for users

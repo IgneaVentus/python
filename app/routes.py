@@ -2,7 +2,7 @@
 from app import app, db
 from app.scripts import restart_db, killWeb, remove_comment, remove_post, remove_user, remove_forum
 from app.models import User, Post, Comment, Subforum, Error, Ban
-from flask_login import LoginManager, login_user, logout_user, current_user, login_required, fresh_login_required
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from flask import Flask, render_template, request, redirect, url_for, session, abort, flash
 from datetime import datetime, timedelta
 from math import floor
@@ -204,7 +204,7 @@ def user_profile(user):
         return redirect(request.args.get("referer"))
 
 @app.route("/cpanel", methods=["GET","POST"])
-@fresh_login_required
+@login_required
 def cpanel():
     if request.method=="GET":
         forums=Subforum.query.filter_by(author=current_user.username).order_by(Subforum.pub_date.desc()).paginate(request.args.get("pf", 1, type=int),10,False)

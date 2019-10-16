@@ -132,7 +132,7 @@ class Ban(db.Model):
         self.time_stop=time_stop
 
     def time_left(self):
-        return self.time_stop-datetime.utcnow
+        return self.time_stop-datetime.utcnow()
 
 class Error(db.Model):
     date=db.Column(db.DateTime, primary_key=True, default=datetime.utcnow)

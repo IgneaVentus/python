@@ -34,7 +34,7 @@
         </div>
         <div class="tab-pane fade" id="v-pills-forums" role="tabpanel" aria-labelledby="v-pills-forums-tab">
         {% if forums %}
-        {% if forums.pages>1 %} <nav aria-label="pagination controls userlist">
+        {% if forums.pages>1 %} <nav aria-label="pagination controls forums">
             <ul class="pagination pagination-sm justify-content-center">
                 {% if forums.has_prev %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pf={{forums.prev_num}}">&laquo;</a></li>{% endif %}
                 {% for page in forums.iter_pages() %}{% if page<=forums.pages and page>0 %}<li class="page-item {% if page==forums.page %}active{%endif%}"><a class="page-link bg-dark border-0" href="/cpanel?pf={{page}}">{{page}}</a></li>{% endif %}{%endfor%}
@@ -56,7 +56,7 @@
         </div>
         <div class="tab-pane fade" id="v-pills-posts" role="tabpanel" aria-labelledby="v-pills-posts-tab">
         {% if posts %}
-        {% if posts.pages>1 %} <nav aria-label="pagination controls userlist">
+        {% if posts.pages>1 %} <nav aria-label="pagination controls posts">
             <ul class="pagination pagination-sm justify-content-center">
                 {% if posts.has_prev %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pp={{posts.prev_num}}">&laquo;</a></li>{% endif %}
                 {% for page in posts.iter_pages() %}{% if page<=posts.pages and page>0 %}<li class="page-item {% if page==posts.page %}active{%endif%}"><a class="page-link bg-dark border-0" href="/cpanel?pp={{page}}">{{page}}</a></li>{% endif %}{%endfor%}
@@ -78,7 +78,7 @@
         </div>
         <div class="tab-pane fade" id="v-pills-comments" role="tabpanel" aria-labelledby="v-pills-comments-tab">
         {% if comments %}
-        {% if comments.pages>1 %} <nav aria-label="pagination controls userlist">
+        {% if comments.pages>1 %} <nav aria-label="pagination controls comments">
             <ul class="pagination pagination-sm justify-content-center">
                 {% if comments.has_prev %}<li class="page-item"><a class="page-link bg-dark border-0" href="/cpanel?pc={{comments.prev_num}}">&laquo;</a></li>{% endif %}
                 {% for page in comments.iter_pages() %}{% if page<=comments.pages and page>0 %}<li class="page-item {% if page==comments.page %}active{%endif%}"><a class="page-link bg-dark border-0" href="/cpanel?pc={{page}}">{{page}}</a></li>{% endif %}{%endfor%}
@@ -98,6 +98,7 @@
         <p> Jeszcze nie masz żadnych komentarzy!</p>
         {% endif %}
         </div>
+        {% if current_user.level > 0 %}
         <div class="tab-pane fade" id="v-pills-userlist" role="tabpanel" aria-labelledby="v-pills-userlist-tab">
             <form action='' method="POST">
                 <div class="form-row">
@@ -313,6 +314,8 @@
                 </tbody>
             </table>
         </div>
+        {%endif%}
+        {% if current_user.level>1 %}
         <div class="tab-pane fade" id="v-pills-apanel" role="tabpanel" aria-labelledby="v-pills-apanel-tab">
                 <form method="POST">
                     <div class="input-group">
@@ -322,6 +325,7 @@
                 </form>
             </div>
         </div>
+        {%endif%}
     </div>
   </div>
 {% endblock %}

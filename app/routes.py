@@ -14,7 +14,8 @@ login_manager.init_app(app)
 login_manager.login_view = "login"
 login_manager.login_message = "Musisz się najpierw zalogować."
 login_manager.login_message_category = "info"
-login_manager.needs_refresh_message = "Ta strona wymaga ponownego zalogowania"
+login_manager.needs_refresh_message = "Prosimy o ponowną autoryzację."
+login_manager.needs_refresh_message_category = "info"
 login_manager.refresh_view="login"
 
 @app.context_processor
@@ -25,10 +26,14 @@ def inject_top5():
 def user_loader(username):
     return User.query.get(username)
 
-@app.route('/', defaults={"forum": "Główna"})
-@app.route('/<forum>', defaults={"p": 1})
+@app.route('/')
+def reroute():
+    return redirect (url_for("index",forum="Główna", p=1))
+@app.route('/<forum>/', defaults={"p": 1})
 @app.route('/<forum>/<int:p>', methods=["GET", "POST"])
 def index(forum, p):
+    if current_user.is_authenticated and current_user.banned:
+            logout_user()
     if request.method=="GET":
         posts=Post.query.filter_by(forum=forum).order_by(Post.pub_date.desc()).paginate(p,15,False)
         return render_template("index.html", forum=forum,  posts=posts)
@@ -73,8 +78,8 @@ def register():
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
-    if request.method=='GET' and not current_user.is_anonymous:
-        flash ("Już zalogowano!", category="warning")
+    if request.method=='GET' and current_user.is_authenticated:
+        flash ("Już zalogowano!", category="info")
         dest_url = request.args.get('next')
         if not dest_url:
             dest_url="/Główna"
@@ -88,9 +93,9 @@ def login():
         flash("Błąd, zła nazwa użytkownika lub hasło", category="warning")
         return redirect(url_for('login'))
     if registered_user.banned:
-        ban_time=Ban.query.filter_by(target=registered_user.username).order_by(Ban.time_stop.asc()).first()
-        if ban_time>0:
-            flash("Błąd, konto zostało zablokowane przez administratora. Pozostały czas: "+str(ban_time.days)+" dni, "+str(floor(ban_time.seconds/3600))+" godzin i "+str(floor((ban_time.seconds/60)%60))+" minut.", category="warning")
+        ban=Ban.query.filter_by(target=registered_user.username).order_by(Ban.time_stop.asc()).first()
+        if ban.time_stop>datetime.utcnow():
+            flash("Błąd, konto zostało zablokowane przez administratora. Pozostały czas: "+str(ban.time_left().days)+" dni, "+str(floor(ban.time_left().seconds/3600))+" godzin i "+str(floor((ban.time_left().seconds/60)%60))+" minut.", category="warning")
             return redirect(url_for('login'))
         registered_user.banned=False
         db.session.commit()

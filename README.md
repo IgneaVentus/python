@@ -8,15 +8,15 @@ Now, You are free to use it, modify it or whatever. The only requirement is for 
 
 To do:
 - [X] Fix "Modified" tag at post.html
-- [ ]Move aPanel to different html
+- [ ] Move aPanel to different html
 - [X] Simplify routes
-- [ ]Add pagination
+- [ ] Add pagination
 - [X] Add possibility for "sticky", non-deletable (for script) posts
-- [ ]Add basic mail functionality for users
-- [ ]Add basic notepad functionality for users
-- [ ]Add favorite posts functionality for users
-- [ ]Add basic mentioning functionality for users
-- [ ]/(OPTIONAL)Add possibility to post images
+- [ ] Add basic mail functionality for users
+- [ ] Add basic notepad functionality for users
+- [ ] Add favorite posts functionality for users
+- [ ] Add basic mentioning functionality for users
+- [ ] \(Optional)Add possibility to post images
 
 *Right now I admit I care more about not using space than actually building community. This is still, after all, WIP, and to add to it right now I use free hosting.
 Btw, they earned it: https://pythonanywhere.com
